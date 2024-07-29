@@ -12,7 +12,7 @@ class UserSchema(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
-    email: str
+    email: EmailStr
 
     class Config:
         from_attributes = True

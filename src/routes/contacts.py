@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.db import get_db
+from src.entity.models import User
 
 from src.repository import contacts as repositories_contacts
 from src.schemas.contact import ContactSchema, ContactResponse, ContactUpdateSchema
-
+from src.services.auth import auth_service
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/contacts", tags=["contacts"])
 async def get_contacts(
     limit: int = Query(10, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)
 ):
     contacts = await repositories_contacts.get_contacts(limit, offset, db)
     return contacts

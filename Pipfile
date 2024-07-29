@@ -5,15 +5,14 @@ name = "pypi"
 
 [packages]
 fastapi = "*"
-p = {extras = ["standard"] }
-sqlalchemy = "*"
-psycopg2 = "*"
 alembic = "*"
+sqlalchemy = "*"
 asyncpg = "*"
-passlib = {extras = ["bcrypt"], version = "*"}
-python-multipart = "*"
+uvicorn = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
 pydantic = {extras = ["email"], version = "*"}
+python-multipart = "*"
+passlib = {extras = ["bcrypt"], version = "*"}
 
 [dev-packages]
 
