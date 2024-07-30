@@ -8,7 +8,7 @@ from src.schemas.user import UserSchema
 
 
 
-async def get_user_by_email(email: str, db: AsyncSession = Depends(get_db)):
+async def get_user_by_email(email: str, db: AsyncSession):
     try:
         stmt = select(User).filter_by(email=email)
         result = await db.execute(stmt)
@@ -30,6 +30,6 @@ async def create_user(body: UserSchema, db: AsyncSession):
         print(f"Error in create_user: {e}")
         raise
 
-async def update_token(user: User, token: str, db: AsyncSession):
+async def update_token(user: User, token: str|None, db: AsyncSession):
     user.refresh_token = token
     await db.commit()

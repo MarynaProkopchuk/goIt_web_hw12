@@ -14,9 +14,9 @@ router = APIRouter(prefix="/contacts", tags=["contacts"])
 async def get_contacts(
     limit: int = Query(10, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db), current_user: User = Depends(auth_service.get_current_user)
+    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user)
 ):
-    contacts = await repositories_contacts.get_contacts(limit, offset, db)
+    contacts = await repositories_contacts.get_contacts(limit, offset, db, user)
     return contacts
 
 
@@ -25,7 +25,7 @@ async def search_contact(
     name: str = Query(None, min_length=1, max_length=50),
     surname: str = Query(None, min_length=1, max_length=50),
     email: str = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),user: User = Depends(auth_service.get_current_user),
 ):
     if not any([name, surname, email]):
         raise HTTPException(
@@ -33,7 +33,7 @@ async def search_contact(
             detail="At least one search parameter must be provided",
         )
 
-    contact = await repositories_contacts.get_contact(name, surname, email, db)
+    contact = await repositories_contacts.get_contact(name, surname, email, db, user)
     if not contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No contact found"
@@ -42,8 +42,8 @@ async def search_contact(
 
 
 @router.post("/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED)
-async def create_contact(body: ContactSchema, db: AsyncSession = Depends(get_db)):
-    contact = await repositories_contacts.create_contact(body, db)
+async def create_contact(body: ContactSchema, db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user),):
+    contact = await repositories_contacts.create_contact(body, db, user)
     return contact
 
 
@@ -53,7 +53,7 @@ async def update_contact(
     name: str = Query(None, min_length=1, max_length=50),
     surname: str = Query(None, min_length=1, max_length=50),
     email: str = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user),
 ):
     if not any([name, surname, email]):
         raise HTTPException(
@@ -61,13 +61,13 @@ async def update_contact(
             detail="At least one search parameter must be provided",
         )
 
-    contact = await repositories_contacts.get_contact(name, surname, email, db)
+    contact = await repositories_contacts.get_contact(name, surname, email, db, user)
     if not contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No contact found"
         )
 
-    updated_contact = await repositories_contacts.update_contact(contact.id, body, db)
+    updated_contact = await repositories_contacts.update_contact(contact.id, body, db, user)
     if not updated_contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
@@ -80,25 +80,25 @@ async def delete_contact(
     name: str = Query(None, min_length=1, max_length=50),
     surname: str = Query(None, min_length=1, max_length=50),
     email: str = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user),
 ):
     if not any([name, surname, email]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one search parameter must be provided",
         )
-    contact = await repositories_contacts.get_contact(name, surname, email, db)
+    contact = await repositories_contacts.get_contact(name, surname, email, db, user)
     if not contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No contact found"
         )
-    await repositories_contacts.delete_contact(contact.id, db)
+    await repositories_contacts.delete_contact(contact.id, db, user)
     return None
 
 
 @router.get("/birthdays", response_model=list[ContactResponse])
-async def get_upcoming_birthdays(db: AsyncSession = Depends(get_db)):
-    contacts = await repositories_contacts.get_upcoming_birthdays(db)
+async def get_upcoming_birthdays(db: AsyncSession = Depends(get_db), user: User = Depends(auth_service.get_current_user),):
+    contacts = await repositories_contacts.get_upcoming_birthdays(db, user)
     if not contacts:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

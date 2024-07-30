@@ -40,7 +40,7 @@ class Auth:
         )
         return encoded_access_token
 
-    # define a function to generate a new refresh token
+
     async def create_refresh_token(
         self, data: dict, expires_delta: Optional[float] = None
     ):
